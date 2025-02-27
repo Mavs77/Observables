@@ -22,10 +22,16 @@ export class AppComponent implements OnInit {
   intervalSignal = toSignal(this.interval$);
 
   customInterval$ = new Observable((subscriber) => {
-    setInterval(() => {
+    let timesExecuted = 0;
+    const interval = setInterval(() => {
+      if (timesExecuted > 3) {
+        clearInterval(interval);
+        subscriber.complete();
+        return;
+      }
       console.log('Emitting new value...');
       subscriber.next({ message: 'New value' });
-    }, 5000);
+    }, 500000);
   });
 
   private destroyRef = inject(DestroyRef);
@@ -47,6 +53,10 @@ export class AppComponent implements OnInit {
     // this.destroyRef.onDestroy(() => {
     //   subscription.unsubscribe();
     // });
+    this.customInterval$.subscribe({
+      next: (val) => console.log(val),
+      complete: () => console.log('COMPLETED!'),
+    });
     const subscription = this.clickCount$.subscribe({
       next: (val) => console.log(`Clicked button ${this.clickCount()} times.`),
     });
